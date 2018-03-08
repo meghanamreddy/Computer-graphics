@@ -13,6 +13,7 @@
 
 using namespace std;
 
+/* Point translation */
 Vertex translatePoint(float x, float y, float z, float alphax, float alphay, float alphaz) {
 	Vertex temp;
 	temp.x = x + alphax;
@@ -21,6 +22,7 @@ Vertex translatePoint(float x, float y, float z, float alphax, float alphay, flo
 	return temp;
 }
 
+/* Addition of two vectors */
 Vertex addVectors(Vertex v1, Vertex v2) {
 	Vertex v3;
 	v3.x = v1.x + v2.x;
@@ -30,6 +32,7 @@ Vertex addVectors(Vertex v1, Vertex v2) {
 	return v3;
 }
 
+/* Subtraction of two vectors */
 Vertex subtractVectors(Vertex v1, Vertex v2) {
 	Vertex v3;
 	v3.x = v1.x - v2.x;
@@ -39,11 +42,13 @@ Vertex subtractVectors(Vertex v1, Vertex v2) {
 	return v3;
 }
 
+/* Calculate absolute value of a vector */
 float mod(Vertex v1) {
 	float m = pow((v1.x * v1.x) + (v1.y * v1.y) + (v1.z * v1.z), 0.5);
 	return m;
 }
 
+/* Normalize a vector */
 Vertex normalize(Vertex v1, int dir) {
 	float m = mod(v1);
 	Vertex v2;
@@ -53,12 +58,13 @@ Vertex normalize(Vertex v1, int dir) {
 	return v2;
 }
 
-
+/* Dot product of two vectors */
 float dotProduct(Vertex v1, Vertex v2) {
 	float d = v1.x*v2.x + v1.y*v2.y + v1.z*v2.z;
 	return d;
 }
 
+/* Cross product of two vectors */
 Vertex crossProduct(Vertex v1, Vertex v2) {
 	Vertex v3;
 	v3.x = v1.y*v2.z - v1.z*v2.y;
@@ -68,6 +74,7 @@ Vertex crossProduct(Vertex v1, Vertex v2) {
 	return v3;
 }
 
+/* Calculate angle between two vectors */
 float AngleBetweenVectors(Vertex v1, Vertex v2, int dir) {
 	Vertex v3, v4;
 	float val1, val2;
@@ -93,8 +100,8 @@ float AngleBetweenVectors(Vertex v1, Vertex v2, int dir) {
 	float angle = acos(cosval) * 180 / 3.1415926f;
 }
 
-
-
+/* For each polygon which forms a face of the object
+the normal and area is calculated */
 void Object::computePolygonNormalsAndArea() {
 	int i, dir = 1;
 	float area;
@@ -124,6 +131,9 @@ void Object::computePolygonNormalsAndArea() {
 	}
 }
 
+/* Vertex normals are calculated by averaging the normals of the
+ * polygons they belong to.
+ * This ensures the lighting and shading effects are rendered smoothly on the object */
 void Object::computeVertexNormals() {
 	int i, j;
 	Vertex *v1, *v2, *v3;
@@ -155,6 +165,10 @@ void Object::computeVertexNormals() {
 	}
 }
 
+/* Texture mapping for different objects.
+ * A mapping from a 2D image to various points on the object 
+ * so that the 2D image can be used as a texture
+ */
 void Object::computeTexture() {
 	int i,j, fx, fy, fz, f;
 	unsigned long long int sides;
@@ -183,6 +197,9 @@ void Object::computeTexture() {
 
 }
 
+/* The max and min coordinates of the object are recalculated
+ * every time the object is moved.
+ */
 void Object::updateMinMax() {
 
 	Vertex t = translatePoint(minx,0,0, translate_x, 0,0);
@@ -200,6 +217,7 @@ void Object::updateMinMax() {
 
 }
 
+/* Checking if a point lies inside any of the objects on the screen */
 int Object::isPointInside(float nx, float ny, float nz){
 	int temp = 0;
 	updateMinMax();
@@ -217,7 +235,7 @@ int Object::isPointInside(float nx, float ny, float nz){
 	return 0;
 }
 
-
+/* Multiply matrix with a vector */
 Vertex Model::mult (float mat[4][4], Vertex v)
 {
 	Vertex v2;
@@ -229,6 +247,7 @@ Vertex Model::mult (float mat[4][4], Vertex v)
 	return v2;
 }
 
+/* Identifying an object chosen on the screen by its coordinates */
 void Model::pickPoint(float nx, float ny, float nz) {
 	int obj;
 	obj = model_object.isPointInside(nx,ny,nz);
@@ -242,6 +261,7 @@ void Model::pickPoint(float nx, float ny, float nz) {
 	cout << "pick point object " << obj << endl;
 }
 
+/* Initialise the various lights */
 void Model::initlights() {
 
 	glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, 0);
@@ -256,8 +276,6 @@ void Model::initlights() {
 	//headlight
 
 	light_t light0 = {{-3.0, 3.0, -2.0, 0.0}, {0.6, 0.6, 0.6, 1.0}, {1.0, 1.0, 1.0, 1.0}, {0.4, 0.4, 0.4, 1}, {50.0} };
-	//pos, diffuse, specular, ambient, {1, 0.2, 0.2, 1.0}
-
 
 	glEnable(GL_LIGHT0);
 	glLightfv(GL_LIGHT0, GL_AMBIENT, light0.ambient);
@@ -270,7 +288,6 @@ void Model::initlights() {
 	light_t light1 = {{3.0, 3.0, -3.0, 1.0}, {1.0,0.0, 0.0, 1.0}, {1.0,0.0, 0.0, 1.0}, {0.1, 0.1, 0.1, 1} , {50.0}};
 
 	glEnable(GL_LIGHT1);
-	
 
 	glLightfv(GL_LIGHT1, GL_AMBIENT, light1.ambient);
 	glLightfv(GL_LIGHT1, GL_DIFFUSE, light1.diffuse);
@@ -295,10 +312,11 @@ void Model::initlights() {
     	glLightf(GL_LIGHT2, GL_SPOT_EXPONENT, 50.0);
     	glLightfv(GL_LIGHT2,GL_SPOT_DIRECTION, dir2);
 	lights.push_back(light2);	
-	
-	
 }
 
+/* Rendering an object on the screen after doing the necessary translations 
+ * Different camera positions yields a different rendering
+ */
 void Model::render(int headlight, int spotlight1, int spotlight2, int axes, int boundingbox, int texture, int cam) {
 	int sz,i;
 	if (texture == 0) {
@@ -330,8 +348,6 @@ void Model::render(int headlight, int spotlight1, int spotlight2, int axes, int 
 		up_vec.y = model_object.objects[0].translate_y + model_object.objects[0].centroid.y+3;
 		up_vec.z = model_object.objects[0].translate_z + model_object.objects[0].minz+0.1;
 
-		
-	
 		gluLookAt(camera_pos.x, camera_pos.y, camera_pos.z, (look_at.x), (look_at.y), (look_at.z), (up_vec.x), (up_vec.y), (up_vec.z));
 	}	
 	if (cam == 0) { //global camera
@@ -367,11 +383,8 @@ void Model::render(int headlight, int spotlight1, int spotlight2, int axes, int 
 		gluLookAt(camera_pos.x, camera_pos.y, camera_pos.z, (look_at.x), (look_at.y), (look_at.z), (up_vec.x), (up_vec.y), (up_vec.z));
 	}	
 
-	
-		
-
 	// Light
-	//Headlight	
+	// Headlight	
 	float light_pos[] = {camera_pos.x, camera_pos.y, camera_pos.z, 0};
 	if (headlight != 1)
 		glDisable(GL_LIGHT0);
@@ -407,7 +420,6 @@ void Model::render(int headlight, int spotlight1, int spotlight2, int axes, int 
 	if (axes != 0)
 		drawAxes();
 	drawFloor();
-
 	
 	renderObjects(boundingbox);
 	updateShark();
@@ -415,6 +427,7 @@ void Model::render(int headlight, int spotlight1, int spotlight2, int axes, int 
 	
 }
 
+/* Rendering the objects in the model */
 void ModelObject::renderObjects(int boundingbox) {
 	objects[0].render(boundingbox);
 	objects[1].render(boundingbox);
@@ -422,6 +435,7 @@ void ModelObject::renderObjects(int boundingbox) {
 	
 }
 
+/* The speeds of the objects on the screen are changed depending on various variables */
 void ModelObject::manageSpeeds() {
 
 	if (stationary)
@@ -464,6 +478,7 @@ void Model::renderObjects(int boundingbox) {
 	model_object.renderObjects(boundingbox);
 }
 
+/* Rendering the object using its bounding box and coordinates */
 void Object::render(int boundingbox) {
 	glPushMatrix();
 
@@ -489,8 +504,6 @@ void Object::render(int boundingbox) {
 	else
 		glRotatef ((GLfloat)spin, 0.0, 0.0, 1.0);
 
-	
-
 	//setup texture
 	static GLfloat xequalzero[] = {1.0, 0.0, 0.0, 0.0};
 	static GLfloat *currentCoeff;
@@ -514,6 +527,7 @@ void Object::render(int boundingbox) {
 	float x,y,z,theta, texX, texY;
 	glLineWidth(2) ;
 	
+	// Render each face of the object
 	for (i=0; i<numFaces; i++) {
 		sides = polygons[i].sides;
 		glBegin (GL_POLYGON);
@@ -571,18 +585,19 @@ void Object::render(int boundingbox) {
 	}
 }
 
-
-
+/* Increase the speed in which the objects move */
 void ModelObject::increaseSpeed(int obj) {
 	objects[obj].speed = objects[obj].speed + 0.1;
 }
 
+/* Decrease the speed in which the objects move */
 void ModelObject::decreaseSpeed(int obj) {
 	objects[obj].speed = objects[obj].speed - 0.1;
 	if (objects[obj].speed < 0.1)
 		objects[obj].speed = 0.1;
 }
 
+/* Initialise the model with the hierarchy of objects */
 void Model::inittree() {
 	model_object.objects[0].children.push_back(model_object.objects[1]);
 	model_object.objects.erase(model_object.objects.begin()+1);
@@ -598,7 +613,9 @@ void Model::inittree() {
 	model_object.objects.erase(model_object.objects.begin()+2);
 }
 
-
+/* The non-stationary object (which happens to be a shark! )
+ * moves from one object to another depending on mouse input.
+ * And the shark is moved in a smooth path */
 void Model::moveShark() {
 	if (shark_obj == 0) {
 		model_object.objects[0].isChildShark = 0; // detach shark
@@ -632,6 +649,7 @@ void Model::moveShark() {
 	}
 }
 
+/* Update the shark's position */
 void Model::updateShark() {
 	if (shark_stationary )
 		return;
@@ -697,6 +715,7 @@ void Model::updateShark() {
 	}
 }
 
+/* Checking if an object is close to some point */
 bool Model::objectCloseToDest(float a, float b, float c, float x, float y, float z) {
 	float d1 = (a-x)*(a-x);
 	float d2 = (b-y)*(b-y);
@@ -706,10 +725,9 @@ bool Model::objectCloseToDest(float a, float b, float c, float x, float y, float
 	return false;
 }
 
-
+/* The floor is rendered with additional textures */
 void Model::drawFloor()
 {
-
 	glEnable(GL_TEXTURE_2D);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	glBindTexture(GL_TEXTURE_2D, floor_texture);
@@ -736,6 +754,7 @@ void Model::drawFloor()
 
 }
 
+/* Read a .tex file which contains information about an object */
 void Model::readTex(char* filename1, char* filename2, char* filename3, char* filename4, char* filename5) {
 	strcpy(floor_tex, filename1);
 	strcpy(obj_tex1, filename3);
@@ -744,6 +763,7 @@ void Model::readTex(char* filename1, char* filename2, char* filename3, char* fil
 	strcpy(chamelon_tex, filename5);
 }
 
+/* Initialise the texture on the object */
 void Object::inittexture(char * texture) {
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glGenTextures(1, &object_texture);
@@ -765,9 +785,8 @@ void Object::inittexture(char * texture) {
 	SOIL_free_image_data(image);   
 }
 
-
+/* Initialise the texture on all the objects in the model */
 void Model::inittexture() {
-	//make this a for loop if you want to generalise it
 	model_object.objects[0].inittexture(obj_tex1);
 	model_object.objects[1].inittexture(obj_tex2);
 	model_object.objects[2].inittexture(obj_tex3);
@@ -793,7 +812,9 @@ void Model::inittexture() {
 	SOIL_free_image_data(image);   
 }
 
-
+/* Ply reader function/
+ * .ply is a type of file which stores the polygonal information of a an object.
+ * This function is a ply file parser */
 void Model::readPly(char* filename) {
 	ifstream infile;
 	infile.open(filename);
@@ -865,8 +886,6 @@ void Model::computeObjects() {
 	model_object.computeObjects();
 }
 
-
-
 void Model::defaultTexToggle() {
 	if (texdefault == 0) {
 		texdefault = 1;
@@ -882,6 +901,7 @@ void Model::defaultTexToggle() {
 	}
 }
 
+/* Computes the centroid of an object */
 void Object::getCentroid() {
 	int i;
 	centroid.x = 0;
@@ -905,9 +925,9 @@ void Object::getCentroid() {
 		centroid.y += vertices[i].y / numVertices;
 		centroid.z += vertices[i].z / numVertices;
 	}
-	
 }
 
+/* Used when moving the objects around */
 void Object::shiftOriginToCentroidAndNormalise(int s) {
 	int i, j, temp;
 	for (i=0; i<numVertices; i++) {
@@ -955,7 +975,7 @@ void Object::shiftOriginToCentroidAndNormalise(int s) {
 	maxz /= aspect_ratio;
 }
 
-
+/* Draws the bounding boxes of all objects in the model */
 void Model::drawBoundingBox() {
 	glDisable(GL_LIGHTING);
 	model_object.drawBoundingBox();
