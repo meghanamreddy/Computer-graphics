@@ -26,6 +26,7 @@ int texture = 1;
 int   main_window;
 GLUI_RadioGroup *group1;
 
+/* Everytime the display is updated, the model has to be rendered */
 void View::display(void)
 {
 	int k,n=5,i, sz;
@@ -36,8 +37,7 @@ void View::display(void)
 	glPushMatrix();
 	
 	model->render(headlight, spotlight1, spotlight2, axes, boundingbox, texture,  group1->get_int_val());
-
-
+	
 	glPopMatrix();
 	
 	glFlush();
@@ -45,7 +45,7 @@ void View::display(void)
 }
 
 
-
+/* Translates the xyz coordinates of window to frame */
 void GetOGLPos(int x, int y, double & posX, double & posY, double & posZ)
 {
     GLint viewport[4];
@@ -82,7 +82,7 @@ void View::idle( void )
   glutPostRedisplay();
 }
 
-
+/* Rotating the screen using mouse clicks */
 void View::mouse (int button, int state, int x, int y) 
 {
 
@@ -104,6 +104,7 @@ void View::mouse (int button, int state, int x, int y)
 
 }
 
+/* Rotating the screen using mouse clicks */
 void View::motion(int x, int y) 
 {
 	if (valid) 
@@ -120,7 +121,7 @@ void View::motion(int x, int y)
 	glutPostRedisplay();
 }
 
-
+/* Actions on different keyboard inputs */
 void View::keyboard (unsigned char key, int x, int y)
 {
 	switch (key) {
@@ -128,17 +129,15 @@ void View::keyboard (unsigned char key, int x, int y)
       		case '+':
 			cout << " vieeee " << endl;
 			controller->zoom(-0.5);
- 			//scale_x += 0.05;
 			glutPostRedisplay();
 	 		break;
 		case '-':
 			controller->zoom(0.5);
-			//scale_x -= 0.05;
 			glutPostRedisplay();
 			break;
 		
 		case 'm':
-			controller->MoveStopObjects(); //textures - default or manual
+			controller->MoveStopObjects();
 			break;
 		case 'q':
 			controller->increaseSpeed(0);
@@ -170,16 +169,17 @@ void View::specialKeys(int key, int x, int y)
 	glutPostRedisplay();
 }
 
-
+/* Initialisation of glut window and setting up the objects on screen */
 void View::init (int argc, char ** argv)
 {
+	/* Set window specifications */
 	glutInit(&argc, argv);
     	glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGB);
     	glutInitWindowSize(700,700);
     	glutInitWindowPosition(50,50);
     	main_window = glutCreateWindow("Assignment 5");
     
-    
+    	/* Set perspective */
     	glMatrixMode( GL_PROJECTION );
     	glLoadIdentity();    
     	::w = glutGet( GLUT_WINDOW_WIDTH );
@@ -189,6 +189,7 @@ void View::init (int argc, char ** argv)
 	
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 	
+	/* Initialise the models */
 	model->initlights() ;
 	model->inittexture();
 	model->inittree();
@@ -202,6 +203,7 @@ void View::init (int argc, char ** argv)
     	glutMotionFunc(motion);
     	glEnable( GL_DEPTH_TEST );
 
+	/* Additional features on the screen */
 	GLUI *glui = GLUI_Master.create_glui( "GLUI" );
   	glui->add_checkbox( "Headlights", &headlight );
 	glui->add_checkbox( "Spotlight1", &spotlight1 );
@@ -220,12 +222,10 @@ void View::init (int argc, char ** argv)
   	/* We register the idle callback with GLUI, *not* with GLUT */
   	GLUI_Master.set_glutIdleFunc( View::idle );
 
-	
     	glutMainLoop();       
-    
 }	
 
-
+/* When the output window's size is changed */
 void View::reshape(int w, int h)
 {
 	glMatrixMode(GL_PROJECTION);
